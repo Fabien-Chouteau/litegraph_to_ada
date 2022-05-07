@@ -1,0 +1,49 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+  release:
+    types: [created]
+
+jobs:
+  main:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ada-actions/toolchain@ce2020
+      - uses: alire-project/setup-alire@v1
+        with:
+          branch: "master"
+
+      - run: alr build --validation
+      - run: cd tests && alr run
+
+      - name: Make Release Manifest
+        run: |
+          # Set user GitHub login required for `alr publish`
+          alr config --set --global user.github_login ${{github.repository_owner}}
+          
+          # Run Alire publish assistant
+          alr publish --skip-build ${{github.server_url}}/${{github.repository}} ${{github.sha}} # TODO: remove --skip-build when resources crate is published
+
+      - name: Get Release Manifest PATH
+        run: |
+          export MANIFEST_PATHNAME=$(ls alire/releases/*.toml | head -n 1)
+          echo MANIFEST_PATHNAME=$MANIFEST_PATHNAME >> $GITHUB_ENV
+          echo MANIFEST_NAME=$(basename $MANIFEST_PATHNAME) >> $GITHUB_ENV
+
+      - name: Upload release manifest
+        if: (github.event_name == 'release')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.MANIFEST_PATHNAME }}
+          asset_name: ${{ env.MANIFEST_NAME }}
+          asset_content_type: application/toml
