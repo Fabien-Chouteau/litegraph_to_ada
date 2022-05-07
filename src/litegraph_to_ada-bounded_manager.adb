@@ -1,5 +1,30 @@
 package body Litegraph_To_Ada.Bounded_Manager is
 
+   ----------------
+   -- Str_To_Int --
+   ----------------
+
+   procedure Str_To_Int (Str     :     String;
+                         Val     : out Integer;
+                         Success : out Boolean)
+   is
+
+      Mult : Integer := 1;
+   begin
+      Val := 0;
+      for C of reverse Str loop
+         if C not in '0' .. '9' then
+            Success := False;
+            return;
+         end if;
+
+         Val := Val + Mult * Integer (Character'Pos (C) - Character'Pos ('0'));
+         Mult := Mult * 10;
+      end loop;
+
+      Success := True;
+   end Str_To_Int;
+
    ------------------------
    -- Node_Type_Register --
    ------------------------
@@ -126,7 +151,6 @@ package body Litegraph_To_Ada.Bounded_Manager is
          Litegraph_To_Ada.Node (Singleton).Reset_Links;
       end Reset;
 
-
       -------------------------
       -- Print_LG_Definition --
       -------------------------
@@ -180,7 +204,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
    -- Load_Config_Line --
    ----------------------
 
-   procedure Load_Config_Line (Line : String) is
+   procedure Load_Config_Line (Line : String; Result : out Load_Result) is
 
       type String_Slice is record
          F : Integer; --  First index of the slice
@@ -265,7 +289,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
          Cat : Category_Kind;
          Alloc : Acc_Any_Node_Allocator;
          N : Any_Node_Acc := null;
-         Id : Natural := Nodes'First - 1;
+         Id : Natural := Nodes'Last + 1;
 
          Success : Boolean;
       begin
@@ -273,7 +297,8 @@ package body Litegraph_To_Ada.Bounded_Manager is
          Parse_Slice (Val_Slice.F, '/', Cat_Slice);
 
          if not Valid (Cat_Slice) then
-            raise Program_Error;
+            Result := Invalid_Category;
+            return;
          else
             Name_Slice.F := Cat_Slice.L + 2;
             Name_Slice.L := Val_Slice.L;
@@ -281,16 +306,23 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
          Cat_Value (To_Str (Cat_Slice), Cat, Success);
          if not Success then
-            raise Program_Error with "Invalid category";
+            Result := Invalid_Category;
+            return;
          end if;
 
          Alloc := Find_Allocator (Cat, To_Str (Name_Slice));
 
          if Alloc = null then
-            raise Program_Error;
+            Result := Unknown_Node_Type;
+            return;
          end if;
 
          Alloc.Allocate (N);
+
+         if N = null then
+            Result := Max_Node_For_Type_Reached;
+            return;
+         end if;
 
          loop
             Parse_Next_Property;
@@ -300,30 +332,45 @@ package body Litegraph_To_Ada.Bounded_Manager is
             declare
                Key : constant String := To_Str (Key_Slice);
                Val : constant String := To_Str (Val_Slice);
+               Prop_Val : Natural;
+               Success : Boolean;
             begin
                if Key = "id" then
-                  Id := Natural'Value (Val);
+
+                  Str_To_Int (Val, Id, Success);
+                  if not Success then
+                     Result := Invalid_Node_Id;
+                     return;
+                  end if;
 
                   if Id not in Nodes'Range then
-                     raise Program_Error with "Invalid node id";
+                     Result := Max_Node_Reached;
+                     return;
                   end if;
 
                   if Nodes (Id) /= null then
-                     raise Program_Error with "Duplicate node id";
+                     Result := Duplicate_Node_Id;
+                     return;
                   end if;
 
                   Nodes (Id) := N;
                elsif Key = "pox_x" or else Key = "pos_y" then
                   null; -- Ignore position
                else
-                  N.Set_Property (Key, Integer'Value (Val));
+
+                  Str_To_Int (Val, Prop_Val, Success);
+                  if not Success then
+                     Result := Invalid_Property_Format;
+                     return;
+                  end if;
+                  N.Set_Property (Key, Prop_Val);
                end if;
             end;
-
-            if Id not in Nodes'Range then
-               raise Program_Error with "Missing Id";
-            end if;
          end loop;
+
+         if Id not in Nodes'Range then
+            Result := Missing_Node_Id;
+         end if;
       end Load_Node_Config;
 
       --------------------
@@ -335,30 +382,41 @@ package body Litegraph_To_Ada.Bounded_Manager is
          Parse_Next_Property;
 
          if not Valid (Key_Slice) then
-            raise Program_Error;
+            Result := Invalid_Property_Format;
+            P := 0;
+            return;
          end if;
 
          if not Valid (Val_Slice) then
-            raise Program_Error;
+            Result := Invalid_Property_Format;
+            return;
          end if;
 
          declare
-            Node_Id : constant Integer := Integer'Value (To_Str (Key_Slice));
-            P_Id : constant Integer := Integer'Value (To_Str (Val_Slice));
+            Node_Id : Integer;
+            P_Id    : Integer;
+            Success : Boolean;
          begin
-            if Node_Id not in Nodes'Range then
-               raise Program_Error with "Invalid node Id";
+            Str_To_Int (To_Str (Key_Slice), Node_Id, Success);
+            if not Success or else Node_Id not in Nodes'Range then
+               Result := Invalid_Node_Id;
+               return;
             else
                N := Nodes (Node_Id);
             end if;
 
             if N = null then
-               raise Program_Error with "Unknown node Id";
+               Result := Invalid_Node_Id;
+               return;
             end if;
 
-            if P_Id not in Integer (Port_Id'First) .. Integer (Port_Id'Last)
+            Str_To_Int (To_Str (Val_Slice), P_Id, Success);
+            if not Success
+              or else
+                P_Id not in Integer (Port_Id'First) .. Integer (Port_Id'Last)
             then
-               raise Program_Error;
+               Result := Invalid_Port_Id;
+               return;
             else
                P := Port_Id (P_Id);
             end if;
@@ -381,39 +439,56 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
          Link_Id  : constant Natural := Next_Free_Link;
 
-         Result : Connection_Result;
+         C_Result : Connection_Result;
          Success : Boolean;
       begin
 
          if Link_Id not in Links'Range then
-            raise Program_Error;
+            Result := Max_Link_Reached;
+            return;
          else
             Next_Free_Link := Next_Free_Link + 1;
          end if;
 
          Port_Value (Kind_Str, Kind, Success);
          if not Success then
-            raise Program_Error with "Invalid link type";
+            Result := Invalid_Link_Type;
+            return;
          end if;
 
          Parse_Port_Def (Org_Node, Org_Port);
+         if Result /= Ok then
+            return;
+         end if;
+
          Parse_Port_Def (Tar_Node, Tar_Port);
+         if Result /= Ok then
+            return;
+         end if;
 
          Org_Node.Connect (L        => Links (Link_Id)'Access,
                            Kind     => Kind,
                            Org_Port => Org_Port,
                            Target   => Tar_Node,
                            Tar_Port => Tar_Port,
-                           Result   => Result);
+                           Result   => C_Result);
 
-         if Result /= Ok then
-            raise Program_Error with "Invalid connection: '" & Line & "' : " &
-              Result'Img;
-         end if;
+         case C_Result is
+            when Ok => null;
+            when Wrong_Org_Kind => Result := Invalid_Connection_Wrong_Org_Kind;
+            when Wrong_Tar_Kind => Result := Invalid_Connection_Wrong_Tar_Kind;
+            when Invalid_In_Port => Result := Invalid_Connection_In_Port;
+            when Invalid_Out_Port => Result := Invalid_Connection_Out_Port;
+         end case;
       end Load_Link_Config;
 
    begin
+      Result := Ok;
+
       Parse_Next_Property;
+      if Result /= Ok then
+         return;
+      end if;
 
       if To_Str (Key_Slice) = "node" then
          Load_Node_Config;
@@ -435,6 +510,10 @@ package body Litegraph_To_Ada.Bounded_Manager is
         of Node_Allocators (Node_Allocators'First .. Next_Free_Allocator - 1)
       loop
          Alloc.Reset;
+      end loop;
+
+      for N of Nodes loop
+         N := null;
       end loop;
 
       Next_Free_Link := Links'First;

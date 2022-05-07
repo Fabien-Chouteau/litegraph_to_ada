@@ -5,7 +5,7 @@ package Testsuite is
 
    type Port_Kind is (Port_A, Port_B, Port_C);
    type Category_Kind is (Cat_A, Cat_B, Cat_C);
-   type Prop_Kind is (Prop_A, Prop_B, Prop_C);
+   type Prop_Kind is (Prop_Int);
 
    type Link_Data is record
       Val : Integer;

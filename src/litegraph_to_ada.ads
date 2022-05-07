@@ -20,7 +20,10 @@ generic
                              Success : out Boolean);
 
    with procedure Put_Line (Str : String);
+
 package Litegraph_To_Ada is
+
+   pragma Unreferenced (Port_Value, Cat_Value);
 
    type Port_Id is new Natural;
    type Port_Info (Label_Len : Natural) is record
@@ -28,7 +31,8 @@ package Litegraph_To_Ada is
       Label : String (1 .. Label_Len);
    end record;
 
-   Invalid_Port : constant Port_Info := (0, Port_Kind'First, (others => ASCII.NUL));
+   Invalid_Port : constant Port_Info := (0, Port_Kind'First,
+                                         (others => ASCII.NUL));
 
    type Property_Id is new Natural;
    type Property_Info (Label_Len : Natural) is record
@@ -37,7 +41,8 @@ package Litegraph_To_Ada is
       Default : Integer;
    end record;
 
-   Invalid_Property : constant Property_Info := (0, Property_Kind'First, (others => ASCII.NUL), 0);
+   Invalid_Property : constant Property_Info := (0, Property_Kind'First,
+                                                 (others => ASCII.NUL), 0);
 
    type Node
    is abstract tagged limited
@@ -89,15 +94,15 @@ private
       Next        : Any_Link_Acc := null;
    end record;
 
-
    type Node
    is abstract tagged limited
            record
               Output_Links : Any_Link_Acc := null;
            end record;
 
-
-   type Connection_Result is (Ok, Wrong_Org_Kind, Wrong_Tar_Kind);
+   type Connection_Result is (Ok,
+                              Wrong_Org_Kind, Wrong_Tar_Kind,
+                              Invalid_In_Port, Invalid_Out_Port);
 
    procedure Connect (This     : in out   Node;
                       L        : not null Any_Link_Acc;

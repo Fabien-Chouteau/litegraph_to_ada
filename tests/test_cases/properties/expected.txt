@@ -1,0 +1,4 @@
+Got property: 'test1'=' 1'
+Got property: 'test2'=' 2'
+Got property: 'test3'=' 3'
+

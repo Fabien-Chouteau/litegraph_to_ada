@@ -1,0 +1,12 @@
+node=CAT_A/mixer_a:id=1:
+node=CAT_A/mixer_a:id=2:
+node=CAT_A/mixer_a:id=3:
+node=CAT_A/mixer_a:id=4:
+node=CAT_A/mixer_a:id=5:
+node=CAT_A/mixer_a:id=6:
+node=CAT_A/mixer_a:id=7:
+node=CAT_A/mixer_a:id=8:
+node=CAT_A/mixer_a:id=9:
+node=CAT_A/mixer_a:id=10:
+node=CAT_B/mixer_b:id=11:
+node=CAT_B/mixer_b:id=12:

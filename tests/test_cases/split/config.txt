@@ -1,0 +1,7 @@
+node=CAT_A/input_a:id=1:
+node=CAT_A/split_b_c:id=2:split_point=3:
+node=CAT_B/print_b:id=3:
+node=CAT_C/print_c:id=4:
+link=PORT_A:1=0:2=0:
+link=PORT_B:2=0:3=0:
+link=PORT_C:2=1:4=0:

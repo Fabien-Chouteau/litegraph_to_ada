@@ -1,1 +1,1 @@
-plop
+config.txt:1: error invalid node category

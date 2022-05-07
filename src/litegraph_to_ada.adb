@@ -14,13 +14,26 @@ package body Litegraph_To_Ada is
                       Tar_Port :          Port_Id;
                       Result   :    out   Connection_Result)
    is
+      Org_Info : constant Port_Info :=
+        Dispatch (This).Out_Port_Info (Org_Port);
+      Tar_Info : constant Port_Info := Target.In_Port_Info (Tar_Port);
    begin
-      if Dispatch (This).Out_Port_Info (Org_Port).Kind /= Kind then
+      if Org_Info = Invalid_Port then
+         Result := Invalid_Out_Port;
+         return;
+      end if;
+
+      if Tar_Info = Invalid_Port then
+         Result := Invalid_In_Port;
+         return;
+      end if;
+
+      if Org_Info.Kind /= Kind then
          Result := Wrong_Org_Kind;
          return;
       end if;
 
-      if Target.In_Port_Info (Tar_Port).Kind /= Kind then
+      if Tar_Info.Kind /= Kind then
          Result := Wrong_Tar_Kind;
          return;
       end if;
@@ -51,7 +64,9 @@ package body Litegraph_To_Ada is
       L : Any_Link_Acc := This.Output_Links;
    begin
       while L /= null loop
-         L.Target.Receive (L.Target_Port, Data);
+         if L.Org_Port = Port then
+            L.Target.Receive (L.Target_Port, Data);
+         end if;
          L := L.Next;
       end loop;
    end Send;
@@ -87,6 +102,7 @@ package body Litegraph_To_Ada is
    --------------------
 
    procedure Print_Property (This : Node'Class; Info : Property_Info) is
+      pragma Unreferenced (This);
    begin
       Put_Line ("  this.properties[""" & Info.Label & """] = " &
                   Info.Default'Img & ";");

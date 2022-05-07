@@ -11,7 +11,12 @@ executables = ["tests"]
 [[depends-on]]
 litegraph_to_ada = "*"
 aaa = "~0.2.4"
+clic = "~0.2.0"
+gnatcov = "^22.0.1"
 
 [[pins]]
 litegraph_to_ada = { path='../../litegraph_to_ada' }
 aaa = { url='https://github.com/mosteo/aaa.git' }
+
+[build-profiles]
+litegraph_to_ada = "validation"

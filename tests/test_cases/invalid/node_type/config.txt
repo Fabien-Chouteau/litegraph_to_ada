@@ -1,1 +1,1 @@
-node=CAT_A/doesnt_exist:id=1:
+node=CAT_A/:id=1:

@@ -1,0 +1,13 @@
+node=CAT_A/input_a:id=1:
+node=CAT_A/print_a:id=2:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:
+link=PORT_A:1=0:2=0:

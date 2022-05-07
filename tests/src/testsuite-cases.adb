@@ -2,16 +2,18 @@ with Ada.Exceptions;
 with Ada.Directories;
 with Ada.Text_IO;
 
-with AAA.Strings;
+with GNAT.OS_Lib;
 
 with Testsuite.Manager;
 with Nodes;
 
+with CLIC.TTY;
+
 package body Testsuite.Cases is
 
-   package Manager is new Testsuite.Manager (Number_Of_Links => 100,
+   package Manager is new Testsuite.Manager (Number_Of_Links => 10,
                                              Number_Of_Types => 100,
-                                             Number_Of_Nodes => 100);
+                                             Number_Of_Nodes => 10);
 
    type Required_Files is (Config, Expected, Input);
 
@@ -64,9 +66,10 @@ package body Testsuite.Cases is
             --  At least one missing file
             for F in Required_Files loop
                if not Found (F) then
-                  Ada.Text_IO.Put_Line ("warning: missing '" & Filename (F) &
-                                          "' in '" & Path &
-                                          "' for a complete test case.");
+                  Ada.Text_IO.Put_Line
+                    (CLIC.TTY.Warn ("warning: missing '" & Filename (F) &
+                       "' in '" & Path &
+                       "' for a complete test case."));
                end if;
             end loop;
          end if;
@@ -99,14 +102,19 @@ package body Testsuite.Cases is
    -- Run_Case --
    --------------
 
-   procedure Run_Case (Dirname : String) is
+   function Run_Case (Dirname : String) return AAA.Strings.Vector is
       use AAA.Strings;
 
       Config   : constant Vector := Load_Content (Dirname, Cases.Config);
       Input    : constant Vector := Load_Content (Dirname, Cases.Input);
       Expected : constant Vector := Load_Content (Dirname, Cases.Expected);
 
+      Result : Manager.Bounded_Manager.Load_Result;
+      use type Manager.Bounded_Manager.Load_Result;
+
+      Line_Nbr : Positive := 1;
    begin
+      Nodes.Reset_Prints;
       Manager.Bounded_Manager.Reset;
 
       --  Manager.Bounded_Manager.Print_LG_Definitions;
@@ -115,42 +123,51 @@ package body Testsuite.Cases is
       --  Ada.Text_IO.Put_Line (Expected.Flatten (ASCII.LF));
 
       for Line of Config loop
-         Manager.Bounded_Manager.Load_Config_Line (Line);
+         Manager.Bounded_Manager.Load_Config_Line (Line, Result);
+         if Result /= Manager.Bounded_Manager.Ok then
+            Nodes.Print_Line
+              (Filename (Cases.Config) & ":" & Trim (Line_Nbr'Img) &
+                 ": error " &
+                 Manager.Bounded_Manager.Result_String (Result));
+            exit;
+         end if;
+         Line_Nbr := Line_Nbr + 1;
       end loop;
 
-      for Line of Input loop
-         if Has_Prefix (Line, "input_a:") then
-            Manager.Register_Input_A_Node.Singleton.Push
-              ((Val => Integer'Value (Tail (Line, ':'))));
-         elsif Has_Prefix (Line, "input_b:") then
-            Manager.Register_Input_B_Node.Singleton.Push
-              ((Val => Integer'Value (Tail (Line, ':'))));
-         elsif Has_Prefix (Line, "input_c:") then
-            Manager.Register_Input_C_Node.Singleton.Push
-              ((Val => Integer'Value (Tail (Line, ':'))));
-         end if;
-      end loop;
+      if Result = Manager.Bounded_Manager.Ok then
+         --  Only send inputs if the config is correct
+
+         for Line of Input loop
+            if Has_Prefix (Line, "input_a:") then
+               Manager.Register_Input_A_Node.Singleton.Push
+                 ((Val => Integer'Value (Tail (Line, ':'))));
+            elsif Has_Prefix (Line, "input_b:") then
+               Manager.Register_Input_B_Node.Singleton.Push
+                 ((Val => Integer'Value (Tail (Line, ':'))));
+            elsif Has_Prefix (Line, "input_c:") then
+               Manager.Register_Input_C_Node.Singleton.Push
+                 ((Val => Integer'Value (Tail (Line, ':'))));
+            end if;
+         end loop;
+      end if;
 
       declare
          Output : constant AAA.Strings.Vector := Nodes.Get_Prints;
       begin
-         if Output  = Expected then
-            Ada.Text_IO.Put_Line ("PASS");
+         if Output = Expected then
+            return Empty_Vector;
          else
-            Ada.Text_IO.Put_Line ("FAIL");
-            Ada.Text_IO.Put_Line
-              (Diff (A           => Expected,
-                     B           => Output,
-                     A_Name      => "expected",
-                     B_Name      => "output").Flatten (ASCII.LF));
+            return Diff (A           => Expected,
+                         B           => Output,
+                         A_Name      => "expected",
+                         B_Name      => "output");
          end if;
       end;
    exception
       when E : others =>
-         Ada.Text_IO.Put_Line ("FAIL (exception)");
-         if True then
-            Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
-         end if;
+         return Result : AAA.Strings.Vector do
+            Result.Append (Ada.Exceptions.Exception_Information (E));
+         end return;
    end Run_Case;
 
    ---------------
@@ -158,14 +175,41 @@ package body Testsuite.Cases is
    ---------------
 
    procedure Run_Cases (List : Test_Cases_List.List) is
-      Count : Positive := 1;
+      use AAA.Strings;
+      use CLIC.TTY;
+
+      Count : Natural := 0;
+      Fail  : Natural := 0;
+      Result : AAA.Strings.Vector;
    begin
+
       for Dirname of List loop
-         Ada.Text_IO.Put ("[" & Count'Img & "/" & List.Length'Img & "] " &
-                            Dirname & " -> ");
-         Run_Case (Dirname);
          Count := Count + 1;
+         Ada.Text_IO.Put ("[" & Emph (Trim (Count'Img) & "/" &
+                            Trim (List.Length'Img)) & "] " &
+                            Dirname & " -> ");
+         Result := Run_Case (Dirname);
+         if Result = Empty_Vector then
+            Ada.Text_IO.Put_Line (OK ("PASS"));
+         else
+            Fail := Fail + 1;
+            Ada.Text_IO.Put_Line (Error ("FAIL"));
+            Ada.Text_IO.Put_Line (Result.Flatten (ASCII.LF));
+         end if;
       end loop;
+
+      if Fail = 0 then
+         Ada.Text_IO.Put_Line
+           (Emph ("Result:") & OK (Count'Img & " PASS"));
+         GNAT.OS_Lib.OS_Exit (0);
+      else
+         Ada.Text_IO.Put_Line
+           (Emph ("Result:") & Error (Fail'Img & " FAIL"));
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
    end Run_Cases;
+
+begin
+   CLIC.TTY.Enable_Color;
 
 end Testsuite.Cases;

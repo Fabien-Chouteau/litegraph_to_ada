@@ -15,6 +15,9 @@ with Nodes.Mixer_C;
 with Nodes.Bridge_A_B;
 with Nodes.Bridge_B_C;
 
+with Nodes.Split;
+with Nodes.Print_Prop;
+
 generic
    Number_Of_Links : Positive;
    Number_Of_Types : Positive;
@@ -41,15 +44,21 @@ package Testsuite.Manager is
    is new Bounded_Manager.Singleton_Node_Register (Nodes.Input_C.Node);
 
    package Register_Mixer_A_Node
-   is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_A.Node, 100);
+   is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_A.Node, 10);
    package Register_Mixer_B_Node
-   is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_B.Node, 100);
+   is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_B.Node, 10);
    package Register_Mixer_C_Node
-   is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_C.Node, 100);
+   is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_C.Node, 10);
 
    package Register_Bridge_A_B_Node
-   is new Bounded_Manager.Node_Type_Register (Nodes.Bridge_A_B.Node, 100);
+   is new Bounded_Manager.Node_Type_Register (Nodes.Bridge_A_B.Node, 10);
    package Register_Bridge_B_C_Node
-   is new Bounded_Manager.Node_Type_Register (Nodes.Bridge_B_C.Node, 100);
+   is new Bounded_Manager.Node_Type_Register (Nodes.Bridge_B_C.Node, 10);
+
+   package Register_Split_Node
+   is new Bounded_Manager.Node_Type_Register (Nodes.Split.Node, 10);
+
+   package Register_Print_Prop_Node
+   is new Bounded_Manager.Singleton_Node_Register (Nodes.Print_Prop.Node);
 
 end Testsuite.Manager;
