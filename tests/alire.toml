@@ -1,0 +1,17 @@
+name = "tests"
+description = "Shiny new project"
+version = "0.1.0-dev"
+
+authors = ["Fabien Chouteau"]
+maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
+maintainers-logins = ["Fabien-Chouteau"]
+
+executables = ["tests"]
+
+[[depends-on]]
+litegraph_to_ada = "*"
+aaa = "~0.2.4"
+
+[[pins]]
+litegraph_to_ada = { path='../../litegraph_to_ada' }
+aaa = { url='https://github.com/mosteo/aaa.git' }

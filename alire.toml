@@ -1,0 +1,9 @@
+name = "litegraph_to_ada"
+description = "An Ada library create and use graph on LiteGraph js"
+version = "0.1.0-dev"
+licenses = "MIT"
+tags = ["litegraph", "graph", "gui"]
+
+authors = ["Fabien Chouteau"]
+maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
+maintainers-logins = ["Fabien-Chouteau"]
