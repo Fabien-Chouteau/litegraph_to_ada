@@ -14,4 +14,6 @@ package Testsuite.Cases is
 
    procedure Run_Cases (List : Test_Cases_List.List);
 
+   procedure Print_LG_Definitions;
+
 end Testsuite.Cases;

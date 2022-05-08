@@ -209,6 +209,17 @@ package body Testsuite.Cases is
       end if;
    end Run_Cases;
 
+   --------------------------
+   -- Print_LG_Definitions --
+   --------------------------
+
+   procedure Print_LG_Definitions is
+   begin
+      Nodes.Reset_Prints;
+      Manager.Bounded_Manager.Print_LG_Definitions;
+      Ada.Text_IO.Put_Line (Nodes.Get_Prints.Flatten (ASCII.LF));
+   end Print_LG_Definitions;
+
 begin
    CLIC.TTY.Enable_Color;
 

@@ -1,0 +1,55 @@
+<HTML>
+<head>
+	<link rel="stylesheet" type="text/css" href="litegraph.css">
+	<link rel="stylesheet" type="text/css" href="litegraph-editor.css">
+	<script type="text/javascript" src="litegraph.js"></script>
+	<script type="text/javascript" src="litegraph_to_ada.js"></script>
+	<script type="text/javascript" src="example_nodes.js"></script>
+</head>
+<body style='width:100%; height:100%'>
+  <button onclick="graphExportTA()">Export graph</button>
+  <button onclick="graphImportTA()">Import graph</button>
+  <div class='litegraph'>
+    <canvas id='mycanvas' width='2048' height='600' style='border: 1px solid'></canvas>
+  </div>
+  <textarea id='test-graph-inspect' cols='120' rows='40'>
+node=CAT_A/input_a:id=1:pos_x=150:pos_y=275:
+node=CAT_B/input_b:id=4:pos_x=390:pos_y=185:
+node=CAT_A/split_b_c:id=2:pos_x=390:pos_y=271:split_point=0:
+node=CAT_C/print_c:id=5:pos_x=625:pos_y=375:
+node=CAT_B/mixer_b:id=3:pos_x=625:pos_y=235:
+node=CAT_B/print_b:id=6:pos_x=840:pos_y=235:
+link=PORT_A:1=0:2=0:
+link=PORT_B:2=0:3=1:
+link=PORT_B:4=0:3=0:
+link=PORT_C:2=1:5=0:
+link=PORT_B:3=0:6=0:
+  </textarea>
+<script>
+
+var graph = new LGraph();
+//     * LGraph is the class that contain a full graph. We instantiate one and add nodes to it, and then we can run the execution loop.
+//         * supported callbacks:
+//        	+ onNodeAdded: when a new node is added to the graph
+//        	+ onNodeRemoved: when a node inside this graph is removed
+//        	+ onNodeConnectionChange: some connection has changed in the graph (connected or disconnected)
+
+var canvas = new LGraphCanvas("#mycanvas", graph);
+
+graph.start()
+
+function graphExportTA () {
+  const text = graph.toPicoHubConfig();
+  document.getElementById("test-graph-inspect").value = text;
+}
+
+function graphImportTA () {
+  const text = document.getElementById("test-graph-inspect").value;
+  graph.loadPicoHubConfig(text);
+}
+
+graphImportTA();
+
+</script>
+</body>
+</html>
