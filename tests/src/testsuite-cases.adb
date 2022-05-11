@@ -137,6 +137,8 @@ package body Testsuite.Cases is
       if Result = Manager.Bounded_Manager.Ok then
          --  Only send inputs if the config is correct
 
+         Manager.Bounded_Manager.Start;
+
          for Line of Input loop
             if Has_Prefix (Line, "input_a:") then
                Manager.Register_Input_A_Node.Singleton.Push

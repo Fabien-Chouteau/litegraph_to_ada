@@ -1,0 +1,9 @@
+node=CAT_A/const_a:id=1:
+node=CAT_A/print_a:id=2:
+node=CAT_B/const_b:id=3:
+node=CAT_B/print_b:id=4:
+node=CAT_C/const_c:id=5:
+node=CAT_C/print_c:id=6:
+link=PORT_A:1=0:2=0:
+link=PORT_B:3=0:4=0:
+link=PORT_C:5=0:6=0:

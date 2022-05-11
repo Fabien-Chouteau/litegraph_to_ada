@@ -82,6 +82,30 @@ function Node_CAT_C_mixer_c()
 }
 Node_CAT_C_mixer_c.title = "mixer_c";
 LiteGraph.registerNodeType("CAT_C/mixer_c", Node_CAT_C_mixer_c);
+function Node_CAT_A_const_a()
+{
+  that = this;
+  this.addOutput("Out", "PORT_A", {shape: LiteGraph.ROUND_SHAPE});
+  this.properties = {};
+}
+Node_CAT_A_const_a.title = "const_a";
+LiteGraph.registerNodeType("CAT_A/const_a", Node_CAT_A_const_a);
+function Node_CAT_B_const_b()
+{
+  that = this;
+  this.addOutput("Out", "PORT_B", {shape: LiteGraph.BOX_SHAPE});
+  this.properties = {};
+}
+Node_CAT_B_const_b.title = "const_b";
+LiteGraph.registerNodeType("CAT_B/const_b", Node_CAT_B_const_b);
+function Node_CAT_C_const_c()
+{
+  that = this;
+  this.addOutput("Out", "PORT_C", {shape: LiteGraph.ARROW_SHAPE});
+  this.properties = {};
+}
+Node_CAT_C_const_c.title = "const_c";
+LiteGraph.registerNodeType("CAT_C/const_c", Node_CAT_C_const_c);
 function Node_CAT_A_bridge_a_b()
 {
   that = this;

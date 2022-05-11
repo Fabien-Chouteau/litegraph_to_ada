@@ -93,6 +93,9 @@ package Litegraph_To_Ada is
                            Val  :        Property_Value)
    is null;
 
+   procedure On_Start (This : in out Node)
+   is null;
+
    procedure Send (This : Node;
                    Port : Port_Id;
                    Data : Link_Data);

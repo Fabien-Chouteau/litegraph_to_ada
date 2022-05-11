@@ -1,5 +1,7 @@
 package body Litegraph_To_Ada.Bounded_Manager is
 
+   Started : Boolean := False;
+
    ----------------
    -- Str_To_Int --
    ----------------
@@ -575,6 +577,12 @@ package body Litegraph_To_Ada.Bounded_Manager is
       end Load_Link_Config;
 
    begin
+
+      if Started then
+         Result := Cannot_Modify_Graph_After_Start;
+         return;
+      end if;
+
       Result := Ok;
 
       Parse_Next_Property;
@@ -590,6 +598,20 @@ package body Litegraph_To_Ada.Bounded_Manager is
          raise Program_Error;
       end if;
    end Load_Config_Line;
+
+   -----------
+   -- Start --
+   -----------
+
+   procedure Start is
+   begin
+      for N of Nodes loop
+         if N /= null then
+            N.On_Start;
+         end if;
+      end loop;
+      Started := True;
+   end Start;
 
    -----------
    -- Reset --
@@ -609,6 +631,8 @@ package body Litegraph_To_Ada.Bounded_Manager is
       end loop;
 
       Next_Free_Link := Links'First;
+
+      Started := False;
    end Reset;
 
    --------------------------

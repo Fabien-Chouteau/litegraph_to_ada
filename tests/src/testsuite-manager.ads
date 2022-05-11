@@ -12,6 +12,10 @@ with Nodes.Mixer_A;
 with Nodes.Mixer_B;
 with Nodes.Mixer_C;
 
+with Nodes.Const_A;
+with Nodes.Const_B;
+with Nodes.Const_C;
+
 with Nodes.Bridge_A_B;
 with Nodes.Bridge_B_C;
 
@@ -50,6 +54,13 @@ package Testsuite.Manager is
    is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_B.Node, 10);
    package Register_Mixer_C_Node
    is new Bounded_Manager.Node_Type_Register (Nodes.Mixer_C.Node, 10);
+
+   package Register_Const_A_Node
+   is new Bounded_Manager.Node_Type_Register (Nodes.Const_A.Node, 10);
+   package Register_Const_B_Node
+   is new Bounded_Manager.Node_Type_Register (Nodes.Const_B.Node, 10);
+   package Register_Const_C_Node
+   is new Bounded_Manager.Node_Type_Register (Nodes.Const_C.Node, 10);
 
    package Register_Bridge_A_B_Node
    is new Bounded_Manager.Node_Type_Register (Nodes.Bridge_A_B.Node, 10);

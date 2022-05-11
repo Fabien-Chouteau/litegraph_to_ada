@@ -1,0 +1,3 @@
+print_a got: 1
+print_b got: 2
+print_c got: 3

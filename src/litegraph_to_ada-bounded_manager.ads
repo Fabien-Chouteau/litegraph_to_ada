@@ -17,6 +17,7 @@ package Litegraph_To_Ada.Bounded_Manager is
    end Singleton_Node_Register;
 
    type Load_Result is (Ok,
+                        Cannot_Modify_Graph_After_Start,
                         Invalid_Category,
                         Invalid_Node_Type,
                         Invalid_Node_Id,
@@ -45,6 +46,10 @@ package Litegraph_To_Ada.Bounded_Manager is
    procedure Load_Config_Line (Line : String; Result : out Load_Result);
    --  Parse and load the give graph config line
 
+   procedure Start;
+   --  Start the graph. This procedure will call On_Start for all nodes, which
+   --  may trigger transfers. The graph is not modifiable after this point.
+
    procedure Reset;
    --  Remove all nodes an links
 
@@ -53,14 +58,16 @@ package Litegraph_To_Ada.Bounded_Manager is
    function Result_String (Result : Load_Result) return String
    is (case Result is
           when Ok => "ok",
-          when Invalid_Category => "invalid node category",
+          when Cannot_Modify_Graph_After_Start =>
+             "cannot modify graph after start",
+          when Invalid_Category  => "invalid node category",
           when Invalid_Node_Type => "invalid node type",
-          when Invalid_Node_Id => "invalid node id",
-          when Missing_Node_Id => "missing node id",
+          when Invalid_Node_Id   => "invalid node id",
+          when Missing_Node_Id   => "missing node id",
           when Duplicate_Node_Id => "duplicate node id",
           when Unknown_Node_Type => "unknown node type",
           when Invalid_Link_Type => "invalid link type",
-          when Invalid_Port_Id => "invalid port id",
+          when Invalid_Port_Id   => "invalid port id",
           when Invalid_Connection_Wrong_Org_Kind =>
              "invalid connection, origin type",
           when Invalid_Connection_Wrong_Tar_Kind =>
