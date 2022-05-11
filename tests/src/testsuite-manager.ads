@@ -17,6 +17,7 @@ with Nodes.Bridge_B_C;
 
 with Nodes.Split;
 with Nodes.Print_Prop;
+with Nodes.Widgets;
 
 generic
    Number_Of_Links : Positive;
@@ -57,6 +58,9 @@ package Testsuite.Manager is
 
    package Register_Split_Node
    is new Bounded_Manager.Node_Type_Register (Nodes.Split.Node, 10);
+
+   package Register_Widgets_Node
+   is new Bounded_Manager.Node_Type_Register (Nodes.Widgets.Node, 10);
 
    package Register_Print_Prop_Node
    is new Bounded_Manager.Singleton_Node_Register (Nodes.Print_Prop.Node);

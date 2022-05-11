@@ -108,9 +108,51 @@ function Node_CAT_A_split_b_c()
   this.addOutput("Out", "PORT_C", {shape: LiteGraph.ARROW_SHAPE});
   this.properties = {};
   this.properties["split_point"] =  0;
+  this.addWidget("slider", "split_point",  0, null,
+             { min: -100, max:  100, step: 1,
+               property: "split_point"});
 }
 Node_CAT_A_split_b_c.title = "split_b_c";
 LiteGraph.registerNodeType("CAT_A/split_b_c", Node_CAT_A_split_b_c);
+function Node_CAT_A_widgets()
+{
+  that = this;
+  this.addInput("In", "PORT_A", {shape: LiteGraph.ROUND_SHAPE});
+  this.addOutput("Out", "PORT_A", {shape: LiteGraph.ROUND_SHAPE});
+  this.properties = {};
+  this.properties["number_widget"] =  0;
+  this.addWidget("number", "number_widget",  0, null,
+             { min: -100, max:  100, step: 1,
+               property: "number_widget"});
+  this.properties["slider_widget"] =  0;
+  this.addWidget("slider", "slider_widget",  0, null,
+             { min: -100, max:  100, step: 1,
+               property: "slider_widget"});
+  this.properties["combo_widget"] =  0;
+  this.addWidget("combo", "combo_widget",  0, null,
+             { values:[
+                   -5,
+                   -4,
+                   -3,
+                   -2,
+                   -1,
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+],
+               property: "combo_widget"});
+  this.properties["text_widget"] = "";
+  this.addWidget("text", "text_widget", "", null,
+               {property: "text_widget"});
+  this.properties["toggle_widget"] = false;
+  this.addWidget("toggle", "toggle_widget", false, null,
+               {property: "toggle_widget"});
+}
+Node_CAT_A_widgets.title = "widgets";
+LiteGraph.registerNodeType("CAT_A/widgets", Node_CAT_A_widgets);
 function Node_CAT_A_print_prop()
 {
   that = this;

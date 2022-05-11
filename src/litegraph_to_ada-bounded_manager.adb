@@ -12,6 +12,18 @@ package body Litegraph_To_Ada.Bounded_Manager is
       Mult : Integer := 1;
    begin
       Val := 0;
+
+      if Str'Length = 0 then
+         Success := False;
+         return;
+      end if;
+
+      if Str (Str'First) = '-' then
+         Str_To_Int (Str (Str'First + 1 .. Str'Last), Val, Success);
+         Val := -Val;
+         return;
+      end if;
+
       for C of reverse Str loop
          if C not in '0' .. '9' then
             Success := False;
@@ -24,6 +36,82 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
       Success := True;
    end Str_To_Int;
+
+   ---------------------
+   -- Str_To_Prop_Val --
+   ---------------------
+
+   function Str_To_Prop_Val (Str     :     String;
+                             Success : out Boolean)
+                             return Property_Value
+   is
+   begin
+      Success := True;
+
+      if Str'Length = 0 then
+         Success := False;
+         return (Str_Prop, 0, "");
+      end if;
+
+      case Str (Str'First) is
+         when '0' .. '9' | '-' =>
+            declare
+               Int : Integer;
+            begin
+               Str_To_Int (Str, Int, Success);
+               return (Int_Prop, 0, Int);
+            end;
+
+         when 't' | 'f' =>
+            if Str = "true" then
+               return (Bool_Prop, 0, True);
+            elsif Str = "false" then
+               return (Bool_Prop, 0, False);
+            else
+               Success := False;
+               return (Bool_Prop, 0, False);
+            end if;
+
+         when '"' =>
+            if Str'Length < 2 or else Str (Str'Last) /= '"' then
+               Success := False;
+               return (Str_Prop, 0, "");
+            else
+
+               declare
+                  Result : String := Str (Str'First + 1 .. Str'Last - 1);
+                  Src : Natural := Result'First;
+                  Dst : Natural := Result'First;
+               begin
+                  while Src in Result'Range loop
+
+                     if Result (Src) = '\' then
+                        if Src < Result'Last
+                          and then
+                            Str (Src + 1) in '"' | '\'
+                        then
+                           Src := Src + 1;
+                        else
+                           Success := False;
+                           return (Str_Prop, 0, "");
+                        end if;
+                     end if;
+
+                     Result (Dst) := Result (Src);
+                     Dst := Dst + 1;
+                     Src := Src + 1;
+                  end loop;
+
+                  return (Str_Prop, Dst - Result'First,
+                          Result (Result'First .. Dst - 1));
+               end;
+            end if;
+
+         when others =>
+            Success := False;
+            return (Str_Prop, 0, "");
+      end case;
+   end Str_To_Prop_Val;
 
    ------------------------
    -- Node_Type_Register --
@@ -332,7 +420,6 @@ package body Litegraph_To_Ada.Bounded_Manager is
             declare
                Key : constant String := To_Str (Key_Slice);
                Val : constant String := To_Str (Val_Slice);
-               Prop_Val : Natural;
                Success : Boolean;
             begin
                if Key = "id" then
@@ -354,16 +441,21 @@ package body Litegraph_To_Ada.Bounded_Manager is
                   end if;
 
                   Nodes (Id) := N;
+
                elsif Key = "pox_x" or else Key = "pos_y" then
                   null; -- Ignore position
-               else
 
-                  Str_To_Int (Val, Prop_Val, Success);
-                  if not Success then
-                     Result := Invalid_Property_Format;
-                     return;
-                  end if;
-                  N.Set_Property (Key, Prop_Val);
+               else
+                  declare
+                     Prop_Val : constant Property_Value
+                       :=  Str_To_Prop_Val (Val, Success);
+                  begin
+                     if not Success then
+                        Result := Invalid_Property_Format;
+                        return;
+                     end if;
+                     N.Set_Property (Key, Prop_Val);
+                  end;
                end if;
             end;
          end loop;

@@ -33,10 +33,8 @@ package Testsuite is
    package LG2Ada is new Litegraph_To_Ada
      (Port_Kind                => Port_Kind,
       Category_Kind            => Category_Kind,
-      Property_Kind            => Prop_Kind,
       Link_Data                => Link_Data,
       Shape_For_Port           => Shape_For_Port,
-      Print_Custom_LG_Property => Print_Custom_LG_Property,
       Port_Value               => Port_Value,
       Cat_Value                => Cat_Value,
       Put_Line                 => Nodes.Print_Line);

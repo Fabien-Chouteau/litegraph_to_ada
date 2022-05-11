@@ -1,4 +1,4 @@
-package body Nodes.Print_Prop is
+package body Nodes.Widgets is
 
    ------------------
    -- Set_Property --
@@ -24,4 +24,17 @@ package body Nodes.Print_Prop is
       end case;
    end Set_Property;
 
-end Nodes.Print_Prop;
+
+   -------------
+   -- Receive --
+   -------------
+
+   overriding
+   procedure Receive
+     (This : in out Node; Port : Port_Id; Data : Link_Data)
+   is
+   begin
+      This.Send (0, Data);
+   end Receive;
+
+end Nodes.Widgets;

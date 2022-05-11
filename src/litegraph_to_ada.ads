@@ -1,15 +1,10 @@
 generic
    type Port_Kind is (<>);
    type Category_Kind is (<>);
-   type Property_Kind is (<>);
 
    type Link_Data (<>) is limited private;
 
    with function Shape_For_Port (Kind : Port_Kind) return String;
-
-   with procedure Print_Custom_LG_Property (Kind    : Property_Kind;
-                                            Label   : String;
-                                            Default : Integer);
 
    with procedure Port_Value (Str     :     String;
                               K       : out Port_Kind;
@@ -35,14 +30,30 @@ package Litegraph_To_Ada is
                                          (others => ASCII.NUL));
 
    type Property_Id is new Natural;
-   type Property_Info (Label_Len : Natural) is record
-      Kind    : Property_Kind;
+   type Property_Kind is (Int_Prop, Str_Prop, Bool_Prop);
+
+
+   type Int_Widget_Kind is (None, Number, Slider, Combo);
+   type Str_Widget_Kind is (None, Text);
+   type Bool_Widget_Kind is (None, Toggle);
+
+   type Property_Info (Label_Len : Natural; Kind : Property_Kind) is record
       Label   : String (1 .. Label_Len);
-      Default : Integer;
+      case Kind is
+         when Int_Prop =>
+            Int_Widget : Int_Widget_Kind;
+            Int_Min, Int_Max : Integer;
+            Int_Default : Integer;
+         when Str_Prop =>
+            Str_Widget : Str_Widget_Kind;
+         when Bool_Prop =>
+            Bool_Widget : Bool_Widget_Kind;
+            Bool_Default : Boolean;
+      end case;
    end record;
 
    Invalid_Property : constant Property_Info := (0, Property_Kind'First,
-                                                 (others => ASCII.NUL), 0);
+                                                 others => <>);
 
    type Node
    is abstract tagged limited
@@ -66,7 +77,20 @@ package Litegraph_To_Ada is
                                return Property_Info
    is abstract;
 
-   procedure Set_Property (This : in out Node; Key : String; Val : Integer)
+   type Property_Value (Kind : Property_Kind; Str_Len : Natural) is record
+      case Kind is
+      when Int_Prop =>
+         Int_Val : Integer;
+      when Bool_Prop =>
+         Bool_Val : Boolean;
+      when Str_Prop =>
+         Str_Val : String (1 .. Str_Len);
+      end case;
+   end record;
+
+   procedure Set_Property (This : in out Node;
+                           Key  :        String;
+                           Val  :        Property_Value)
    is null;
 
    procedure Send (This : Node;

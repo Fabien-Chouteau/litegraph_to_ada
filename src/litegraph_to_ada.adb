@@ -104,10 +104,72 @@ package body Litegraph_To_Ada is
    procedure Print_Property (This : Node'Class; Info : Property_Info) is
       pragma Unreferenced (This);
    begin
-      Put_Line ("  this.properties[""" & Info.Label & """] = " &
-                  Info.Default'Img & ";");
+      case Info.Kind is
+         when Int_Prop =>
+            Put_Line ("  this.properties[""" & Info.Label & """] = " &
+                        Info.Int_Default'Img & ";");
 
-      Print_Custom_LG_Property (Info.Kind, Info.Label, Info.Default);
+            case Info.Int_Widget is
+               when None =>
+                  null;
+
+               when Number | Slider =>
+
+                  Put_Line ("  this.addWidget(""" & (if Info.Int_Widget = Number
+                            then "number"
+                            else "slider") &
+                              """, """ & Info.Label &
+                              """, " & Info.Int_Default'Img & ", null,");
+                  Put_Line ("             { min: " & Info.Int_Min'Img &
+                              ", max: " & Info.Int_Max'Img &
+                              ", step: 1,");
+                  Put_Line ("               property: """ & Info.Label & """});");
+
+               when Combo =>
+                  Put_Line ("  this.addWidget(""combo"", """ & Info.Label &
+                              """, " & Info.Int_Default'Img & ", null,");
+                  Put_Line ("             { values:[");
+                  for X in Info.Int_Min .. Info.Int_Max loop
+                     Put_Line ("                   " & X'Img & ",");
+                  end loop;
+                  Put_Line ("],");
+                  Put_Line ("               property: """ & Info.Label & """});");
+            end case;
+
+         when Str_Prop =>
+            Put_Line ("  this.properties[""" & Info.Label & """] = """";");
+
+            case Info.Str_Widget is
+               when None =>
+                  null;
+
+               when Text =>
+                  Put_Line ("  this.addWidget(""text"", """ &
+                              Info.Label & """, """", null,");
+                  Put_Line ("               {property: """ & Info.Label & """});");
+
+            end case;
+
+         when Bool_Prop =>
+            declare
+               Default : constant String := (if Info.Bool_Default
+                                             then "true"
+                                             else "false");
+            begin
+               Put_Line ("  this.properties[""" & Info.Label & """] = " &
+                           Default & ";");
+
+               case Info.Bool_Widget is
+               when None =>
+                  null;
+               when Toggle =>
+                  Put_Line ("  this.addWidget(""toggle"", """ &
+                              Info.Label & """, " & Default & ", null,");
+                  Put_Line ("               {property: """ & Info.Label & """});");
+
+               end case;
+            end;
+      end case;
    end Print_Property;
 
    -------------------------

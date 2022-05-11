@@ -31,7 +31,9 @@ package Nodes.Print_Prop is
    is (Invalid_Property);
 
    overriding
-   procedure Set_Property (This : in out Node; Key : String; Val : Integer);
+   procedure Set_Property (This : in out Node;
+                           Key  :        String;
+                           Val  :        Property_Value);
 
    overriding
    procedure Receive (This : in out Node;

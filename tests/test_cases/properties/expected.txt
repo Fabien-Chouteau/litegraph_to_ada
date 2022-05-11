@@ -1,4 +1,7 @@
-Got property: 'test1'=' 1'
-Got property: 'test2'=' 2'
-Got property: 'test3'=' 3'
-
+Got str property: 'str'='test'
+Got str property: 'empty_str'=''
+Got str property: 'str_escape'='a\b"c\"d'
+Got int property: 'int'=' 42'
+Got int property: 'negative_int'='-42'
+Got bool property: 'bool_true'='True'
+Got bool property: 'bool_false'='False'
