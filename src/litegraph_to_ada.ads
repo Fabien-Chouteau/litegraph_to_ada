@@ -51,8 +51,7 @@ package Litegraph_To_Ada is
       end case;
    end record;
 
-   Invalid_Property : constant Property_Info := (0, Property_Kind'First,
-                                                 others => <>);
+   Invalid_Property : constant Property_Info := (0, Str_Prop, "", None);
 
    type Node
    is abstract tagged limited
@@ -78,12 +77,12 @@ package Litegraph_To_Ada is
 
    type Property_Value (Kind : Property_Kind; Str_Len : Natural) is record
       case Kind is
-      when Int_Prop =>
-         Int_Val : Integer;
-      when Bool_Prop =>
-         Bool_Val : Boolean;
-      when Str_Prop =>
-         Str_Val : String (1 .. Str_Len);
+         when Int_Prop =>
+            Int_Val : Integer;
+         when Bool_Prop =>
+            Bool_Val : Boolean;
+         when Str_Prop =>
+            Str_Val : String (1 .. Str_Len);
       end case;
    end record;
 
