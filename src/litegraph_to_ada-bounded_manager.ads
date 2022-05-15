@@ -1,12 +1,11 @@
 generic
-   Number_Of_Links : Positive;
-   Number_Of_Types : Positive;
-   Number_Of_Nodes : Positive;
+   Number_Of_Links  : Positive;
+   Number_Of_Nodes  : Positive;
+   Node_Memory_Size : Positive;
 package Litegraph_To_Ada.Bounded_Manager is
 
    generic
       type T is new Litegraph_To_Ada.Node with private;
-      Number_Of_Nodes : Positive;
    package Node_Type_Register is
    end Node_Type_Register;
 
@@ -40,7 +39,7 @@ package Litegraph_To_Ada.Bounded_Manager is
 
                         Max_Link_Reached,
                         Max_Node_Reached,
-                        Max_Node_For_Type_Reached
+                        Node_Memory_Exhausted
                        );
 
    procedure Load_Config_Line (Line : String; Result : out Load_Result);
@@ -79,13 +78,15 @@ package Litegraph_To_Ada.Bounded_Manager is
           when Invalid_Property_Format => "invalid property format",
           when Max_Link_Reached => "max number of links reached",
           when Max_Node_Reached => "max number of nodes reached",
-          when Max_Node_For_Type_Reached =>
-             "max number of nodes of type reached");
+          when Node_Memory_Exhausted => "node memory exhausted");
 
 private
 
-   type Node_Allocator is abstract tagged null record;
+   type Node_Allocator;
    type Acc_Any_Node_Allocator is access all Node_Allocator'Class;
+   type Node_Allocator is abstract tagged record
+      Next : Acc_Any_Node_Allocator := null;
+   end record;
 
    function Category (This : Node_Allocator) return Category_Kind
    is abstract;
@@ -98,9 +99,7 @@ private
    procedure Print_LG_Definition (This : Node_Allocator)
    is abstract;
 
-   Node_Allocators : array (1 .. Number_Of_Types) of Acc_Any_Node_Allocator :=
-     (others => null);
-   Next_Free_Allocator : Positive := Node_Allocators'First;
+   Node_Allocators : Acc_Any_Node_Allocator := null;
 
    procedure Register_Node_Allocator (This : not null Acc_Any_Node_Allocator);
 

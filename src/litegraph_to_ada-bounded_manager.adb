@@ -1,6 +1,57 @@
+with System.Address_To_Access_Conversions;
+with System.Storage_Elements; use System.Storage_Elements;
+
+with Interfaces.C;
+
 package body Litegraph_To_Ada.Bounded_Manager is
 
    Started : Boolean := False;
+
+   Node_Memory : Storage_Array (1 .. Storage_Count (Node_Memory_Size))
+     with Alignment => Standard'Maximum_Alignment;
+   Mem_First : constant Integer_Address :=
+     To_Integer (Node_Memory (Node_Memory'First)'Address);
+   Mem_Last : constant Integer_Address :=
+     To_Integer (Node_Memory (Node_Memory'Last)'Address);
+
+   Mem_Top : Integer_Address :=
+     To_Integer (Node_Memory (Node_Memory'First)'Address);
+
+   --------------
+   -- Allocate --
+   --------------
+
+   function Allocate (Size      : Storage_Count;
+                      Alignment : Storage_Count)
+                      return System.Address
+   is
+      Result : Integer_Address;
+      Align : constant Integer_Address := Integer_Address (Alignment);
+   begin
+
+      --  Put_Line ("Allocate (Size =>" & Size'Img & ", Alignment =>" &
+      --              Alignment'Img & ");");
+      --  Put_Line ("Mem_First =>" & Mem_First'Img);
+      --  Put_Line ("Mem_Top =>" & Mem_Top'Img);
+      --  Put_Line ("Mem_Last =>" & Mem_Last'Img);
+
+      if Size = 0 or else Mem_Top not in Mem_First .. Mem_Last then
+         return System.Null_Address;
+      else
+         Result := Mem_Top;
+
+         --  Align
+         Result := Result + (Align - (Result mod Align));
+
+         Mem_Top := Result + Integer_Address (Size);
+
+         if Mem_Top not in Mem_First .. Mem_Last then
+            return System.Null_Address;
+         else
+            return To_Address (Result);
+         end if;
+      end if;
+   end Allocate;
 
    ----------------
    -- Str_To_Int --
@@ -121,8 +172,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
    package body Node_Type_Register is
 
-      Nodes : array (1 .. Number_Of_Nodes) of aliased T;
-      Next_Free_Node : Positive := Nodes'First;
+      package Convert is new System.Address_To_Access_Conversions (T);
 
       type T_Allocator is new Node_Allocator with null record;
 
@@ -130,22 +180,34 @@ package body Litegraph_To_Ada.Bounded_Manager is
       procedure Reset (This : in out T_Allocator);
       overriding
       procedure Print_LG_Definition (This : T_Allocator);
+      overriding
+      function Category (This : T_Allocator) return Category_Kind;
+      overriding
+      function Name (This : T_Allocator) return String;
+      overriding
+      procedure Allocate (This : in out T_Allocator; Acc : out Any_Node_Acc);
 
       --------------
       -- Category --
       --------------
 
       overriding
-      function Category (This : T_Allocator) return Category_Kind
-      is (Nodes (Nodes'First).Category);
+      function Category (This : T_Allocator) return Category_Kind is
+         A_Node : T;
+      begin
+         return A_Node.Category;
+      end Category;
 
       ----------
       -- Name --
       ----------
 
       overriding
-      function Name (This : T_Allocator) return String
-      is (Nodes (Nodes'First).Name);
+      function Name (This : T_Allocator) return String is
+         A_Node : T;
+      begin
+         return A_Node.Name;
+      end Name;
 
       --------------
       -- Allocate --
@@ -153,13 +215,29 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
       overriding
       procedure Allocate (This : in out T_Allocator; Acc : out Any_Node_Acc) is
+         use Convert;
+         use Interfaces.C;
+
+         procedure Memcpy (S1 : System.Address;
+                           S2 : System.Address;
+                           N  : Interfaces.C.size_t);
+         pragma Import (C, Memcpy, "memcpy");
+
+         Temp : T with Volatile;
+         --  An initialized node that we will copy into the new allocated
+         --  memory.
+
+         Ptr : constant Convert.Object_Pointer :=
+           Convert.To_Pointer (Allocate (Temp'Size / System.Storage_Unit,
+                                         Temp'Alignment));
       begin
-         if Next_Free_Node in Nodes'Range then
-            Acc := Nodes (Next_Free_Node)'Access;
-            Next_Free_Node := Next_Free_Node + 1;
-         else
-            Acc := null;
+         if Ptr /= null then
+            Memcpy (Ptr.all'Address,
+                    Temp'Address,
+                    Temp'Size / System.Storage_Unit);
          end if;
+
+         Acc := Any_Node_Acc (Ptr);
       end Allocate;
 
       -----------
@@ -169,11 +247,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
       overriding
       procedure Reset (This : in out T_Allocator) is
       begin
-         for N of Nodes (Nodes'First .. Next_Free_Node - 1) loop
-            Litegraph_To_Ada.Node (N).Reset_Links;
-         end loop;
-
-         Next_Free_Node := Nodes'First;
+         null;
       end Reset;
 
       -------------------------
@@ -182,11 +256,13 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
       overriding
       procedure Print_LG_Definition (This : T_Allocator) is
+         A_Node : T;
       begin
-         Litegraph_To_Ada.Print_LG_Definition (Nodes (Nodes'First));
+         Litegraph_To_Ada.Print_LG_Definition (A_Node);
       end Print_LG_Definition;
 
       Singleton : aliased T_Allocator;
+
    begin
       Register_Node_Allocator (Singleton'Access);
    end Node_Type_Register;
@@ -263,12 +339,8 @@ package body Litegraph_To_Ada.Bounded_Manager is
    procedure Register_Node_Allocator (This : not null Acc_Any_Node_Allocator)
    is
    begin
-      if Next_Free_Allocator in Node_Allocators'Range then
-         Node_Allocators (Next_Free_Allocator) := This;
-         Next_Free_Allocator := Next_Free_Allocator + 1;
-      else
-         raise Program_Error;
-      end if;
+      This.Next := Node_Allocators;
+      Node_Allocators := This;
    end Register_Node_Allocator;
 
    --------------------
@@ -278,13 +350,16 @@ package body Litegraph_To_Ada.Bounded_Manager is
    function Find_Allocator (Cat : Category_Kind; Name : String)
                             return Acc_Any_Node_Allocator
    is
+      Ptr : Acc_Any_Node_Allocator := Node_Allocators;
    begin
-      for Alloc
-        of Node_Allocators (Node_Allocators'First .. Next_Free_Allocator - 1)
       loop
-         if Alloc.Category = Cat and then Alloc.Name = Name then
-            return Alloc;
+         exit when Ptr = null;
+
+         if Ptr.Category = Cat and then Ptr.Name = Name then
+            return Ptr;
          end if;
+
+         Ptr := Ptr.Next;
       end loop;
 
       return null;
@@ -410,7 +485,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
          Alloc.Allocate (N);
 
          if N = null then
-            Result := Max_Node_For_Type_Reached;
+            Result := Node_Memory_Exhausted;
             return;
          end if;
 
@@ -618,12 +693,15 @@ package body Litegraph_To_Ada.Bounded_Manager is
    -----------
 
    procedure Reset is
+      Ptr : Acc_Any_Node_Allocator := Node_Allocators;
    begin
 
-      for Alloc
-        of Node_Allocators (Node_Allocators'First .. Next_Free_Allocator - 1)
       loop
-         Alloc.Reset;
+         exit when Ptr = null;
+
+         Ptr.Reset;
+
+         Ptr := Ptr.Next;
       end loop;
 
       for N of Nodes loop
@@ -631,6 +709,8 @@ package body Litegraph_To_Ada.Bounded_Manager is
       end loop;
 
       Next_Free_Link := Links'First;
+
+      Mem_Top := Mem_First;
 
       Started := False;
    end Reset;
@@ -640,9 +720,15 @@ package body Litegraph_To_Ada.Bounded_Manager is
    --------------------------
 
    procedure Print_LG_Definitions is
+      Ptr : Acc_Any_Node_Allocator := Node_Allocators;
    begin
-      for Alloc of Node_Allocators (1 .. Next_Free_Allocator - 1) loop
-         Alloc.Print_LG_Definition;
+
+      loop
+         exit when Ptr = null;
+
+         Ptr.Print_LG_Definition;
+
+         Ptr := Ptr.Next;
       end loop;
    end Print_LG_Definitions;
 

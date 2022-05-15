@@ -11,9 +11,9 @@ with CLIC.TTY;
 
 package body Testsuite.Cases is
 
-   package Manager is new Testsuite.Manager (Number_Of_Links => 10,
-                                             Number_Of_Types => 100,
-                                             Number_Of_Nodes => 10);
+   package Manager is new Testsuite.Manager (Number_Of_Links  => 10,
+                                             Number_Of_Nodes  => 10,
+                                             Node_Memory_Size => 256);
 
    type Required_Files is (Config, Expected, Input);
 
