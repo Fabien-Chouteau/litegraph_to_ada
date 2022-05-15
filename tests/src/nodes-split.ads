@@ -5,8 +5,7 @@ package Nodes.Split is
 
    subtype Parent is LG2Ada.Node;
 
-   type Node
-   is new Parent
+   type Node   is new Parent
    with record
       Split_Point : Integer := 0;
    end record;
@@ -44,7 +43,7 @@ package Nodes.Split is
 
    overriding
    procedure Set_Property (This : in out Node;
-                           Key  :        String;
+                           Id   :        Property_Id;
                            Val  :        Property_Value);
 
    overriding

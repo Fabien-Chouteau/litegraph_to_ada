@@ -32,7 +32,6 @@ package Litegraph_To_Ada is
    type Property_Id is new Natural;
    type Property_Kind is (Int_Prop, Str_Prop, Bool_Prop);
 
-
    type Int_Widget_Kind is (None, Number, Slider, Combo);
    type Str_Widget_Kind is (None, Text);
    type Bool_Widget_Kind is (None, Toggle);
@@ -89,7 +88,7 @@ package Litegraph_To_Ada is
    end record;
 
    procedure Set_Property (This : in out Node;
-                           Key  :        String;
+                           Id   :        Property_Id;
                            Val  :        Property_Value)
    is null;
 

@@ -6,13 +6,16 @@ package body Nodes.Split is
 
    overriding
    procedure Set_Property (This : in out Node;
-                           Key  :        String;
+                           Id   :        Property_Id;
                            Val  :        Property_Value)
    is
    begin
-      if Val.Kind = Int_Prop and then Key = "split_point" then
-         This.Split_Point := Val.Int_Val;
-      end if;
+      case Id is
+         when 0 =>
+            This.Split_Point := Val.Int_Val;
+         when others =>
+            null;
+      end case;
    end Set_Property;
 
    -------------

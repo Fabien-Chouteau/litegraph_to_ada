@@ -438,10 +438,49 @@ package body Litegraph_To_Ada.Bounded_Manager is
             Val_Slice.L := Prop_Slice.L;
          end if;
 
-         --  Put_Line ("Prop: " & To_Str (Prop_Slice));
-         --  Put_Line ("Key: " & To_Str (Key_Slice));
-         --  Put_Line ("Value: " & To_Str (Val_Slice));
       end Parse_Next_Property;
+
+      ---------------------
+      -- Handle_Property --
+      ---------------------
+
+      procedure Handle_Property (N   : not null Any_Node_Acc;
+                                 Key : String;
+                                 Val : Property_Value)
+      is
+      begin
+         for Id in Property_Id loop
+
+            declare
+               Info : constant Property_Info :=
+                 N.Get_Property_Info (Id);
+            begin
+
+               exit when Info = Invalid_Property;
+
+               if Info.Label = Key then
+                  if Val.Kind /= Info.Kind then
+                     Result := Invalid_Property_Kind;
+                     return;
+                  end if;
+
+                  if Val.Kind = Int_Prop
+                    and then
+                      Val.Int_Val not in Info.Int_Min .. Info.Int_Max
+                  then
+                     Result := Invalid_Property_Value;
+                     return;
+                  end if;
+
+                  N.Set_Property (Id, Val);
+                  return;
+               end if;
+            end;
+         end loop;
+
+         Result := Unknown_Property;
+
+      end Handle_Property;
 
       ----------------------
       -- Load_Node_Config --
@@ -531,7 +570,12 @@ package body Litegraph_To_Ada.Bounded_Manager is
                         Result := Invalid_Property_Format;
                         return;
                      end if;
-                     N.Set_Property (Key, Prop_Val);
+
+                     Handle_Property (N, Key, Prop_Val);
+                     if Result /= Ok then
+                        return;
+                     end if;
+
                   end;
                end if;
             end;

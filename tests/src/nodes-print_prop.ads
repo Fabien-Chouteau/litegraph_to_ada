@@ -28,11 +28,19 @@ package Nodes.Print_Prop is
    overriding
    function Get_Property_Info (This : Node; Prop : Property_Id)
                                return Property_Info
-   is (Invalid_Property);
+   is (case Prop is
+          when 0 => (3, Int_Prop, "int", None,
+                     Int_Min => Integer'First,
+                     Int_Max => Integer'Last,
+                     Int_Default => 0),
+          when 1 => (3, Str_Prop, "str", None),
+          when 2 => (4, Bool_Prop, "bool", None,
+                     Bool_Default => False),
+          when others => Invalid_Property);
 
    overriding
    procedure Set_Property (This : in out Node;
-                           Key  :        String;
+                           Id   :        Property_Id;
                            Val  :        Property_Value);
 
    overriding

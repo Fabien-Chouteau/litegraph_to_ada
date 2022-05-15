@@ -1,7 +1,7 @@
 node=CAT_A/print_prop:id=1:str="test":
-node=CAT_A/print_prop:id=2:empty_str="":
-node=CAT_A/print_prop:id=3:str_escape="a\\b\"c\\\"d":
+node=CAT_A/print_prop:id=2:str="":
+node=CAT_A/print_prop:id=3:str="a\\b\"c\\\"d":
 node=CAT_A/print_prop:id=4:int=42:
-node=CAT_A/print_prop:id=5:negative_int=-42:
-node=CAT_A/print_prop:id=6:bool_true=true:
-node=CAT_A/print_prop:id=7:bool_false=false:
+node=CAT_A/print_prop:id=5:int=-42:
+node=CAT_A/print_prop:id=6:bool=true:
+node=CAT_A/print_prop:id=7:bool=false:

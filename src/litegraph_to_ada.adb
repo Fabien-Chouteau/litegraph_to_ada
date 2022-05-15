@@ -115,15 +115,17 @@ package body Litegraph_To_Ada is
 
                when Number | Slider =>
 
-                  Put_Line ("  this.addWidget(""" & (if Info.Int_Widget = Number
-                            then "number"
-                            else "slider") &
+                  Put_Line ("  this.addWidget(""" &
+                            (if Info.Int_Widget = Number
+                               then "number"
+                               else "slider") &
                               """, """ & Info.Label &
                               """, " & Info.Int_Default'Img & ", null,");
                   Put_Line ("             { min: " & Info.Int_Min'Img &
                               ", max: " & Info.Int_Max'Img &
                               ", step: 1,");
-                  Put_Line ("               property: """ & Info.Label & """});");
+                  Put_Line ("               property: """ & Info.Label &
+                              """});");
 
                when Combo =>
                   Put_Line ("  this.addWidget(""combo"", """ & Info.Label &
@@ -133,7 +135,8 @@ package body Litegraph_To_Ada is
                      Put_Line ("                   " & X'Img & ",");
                   end loop;
                   Put_Line ("],");
-                  Put_Line ("               property: """ & Info.Label & """});");
+                  Put_Line ("               property: """ & Info.Label &
+                              """});");
             end case;
 
          when Str_Prop =>
@@ -146,7 +149,8 @@ package body Litegraph_To_Ada is
                when Text =>
                   Put_Line ("  this.addWidget(""text"", """ &
                               Info.Label & """, """", null,");
-                  Put_Line ("               {property: """ & Info.Label & """});");
+                  Put_Line ("               {property: """ & Info.Label &
+                              """});");
 
             end case;
 
@@ -165,7 +169,8 @@ package body Litegraph_To_Ada is
                when Toggle =>
                   Put_Line ("  this.addWidget(""toggle"", """ &
                               Info.Label & """, " & Default & ", null,");
-                  Put_Line ("               {property: """ & Info.Label & """});");
+                  Put_Line ("               {property: """ & Info.Label &
+                              """});");
 
                end case;
             end;

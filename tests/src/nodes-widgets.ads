@@ -53,7 +53,7 @@ package Nodes.Widgets is
 
    overriding
    procedure Set_Property (This : in out Node;
-                           Key  :        String;
+                           Id   :        Property_Id;
                            Val  :        Property_Value);
 
    overriding

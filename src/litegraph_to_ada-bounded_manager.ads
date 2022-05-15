@@ -35,7 +35,10 @@ package Litegraph_To_Ada.Bounded_Manager is
                         Invalid_Connection_In_Port,
                         Invalid_Connection_Out_Port,
 
+                        Unknown_Property,
                         Invalid_Property_Format,
+                        Invalid_Property_Kind,
+                        Invalid_Property_Value,
 
                         Max_Link_Reached,
                         Max_Node_Reached,
@@ -75,7 +78,12 @@ package Litegraph_To_Ada.Bounded_Manager is
              "invalid connection, input port",
           when Invalid_Connection_Out_Port =>
              "invalid connection, output port",
+
+          when Unknown_Property => "unknown property",
           when Invalid_Property_Format => "invalid property format",
+          when Invalid_Property_Kind => "invalid property kind",
+          when Invalid_Property_Value => "invalid property value",
+
           when Max_Link_Reached => "max number of links reached",
           when Max_Node_Reached => "max number of nodes reached",
           when Node_Memory_Exhausted => "node memory exhausted");
