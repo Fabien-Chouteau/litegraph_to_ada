@@ -66,14 +66,14 @@ package Litegraph_To_Ada is
    is abstract;
 
    function Out_Port_Info (This : Node; Port : Port_Id) return Port_Info
-   is abstract;
+   is (Invalid_Port);
 
    function In_Port_Info (This : Node; Port : Port_Id) return Port_Info
-   is abstract;
+   is (Invalid_Port);
 
    function Get_Property_Info (This : Node; Prop : Property_Id)
                                return Property_Info
-   is abstract;
+   is (Invalid_Property);
 
    type Property_Value (Kind : Property_Kind; Str_Len : Natural) is record
       case Kind is
@@ -101,7 +101,7 @@ package Litegraph_To_Ada is
    procedure Receive (This : in out Node;
                       Port :        Port_Id;
                       Data :        Link_Data)
-   is abstract;
+   is null;
 
    procedure Print_LG_Definition (This : Node'Class);
    --  Print JavaScript code that defines a LiteGraph node
