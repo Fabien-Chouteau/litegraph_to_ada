@@ -558,7 +558,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
 
                   Nodes (Id) := N;
 
-               elsif Key = "pox_x" or else Key = "pos_y" then
+               elsif Key = "pos_x" or else Key = "pos_y" then
                   null; -- Ignore position
 
                else
