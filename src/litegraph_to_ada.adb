@@ -137,6 +137,49 @@ package body Litegraph_To_Ada is
                   Put_Line ("],");
                   Put_Line ("               property: """ & Info.Label &
                               """});");
+
+               when Input_Clones | Output_Clones =>
+                  declare
+                     Arr : constant String :=
+                       (if Info.Int_Widget = Input_Clones
+                        then "inputs"
+                        else "outputs");
+                     Fun : constant String :=
+                       (if Info.Int_Widget = Input_Clones
+                        then "Input"
+                        else "Output");
+                  begin
+                     pragma Style_Checks ("M120");
+                     Put_Line ("  this.properties[""" & Info.Label & """] = 1;");
+                     Put_Line ("  this.addWidget(""combo"", """ & Info.Label &
+                                 """," & Info.Int_Default'Img & ", null,");
+                     Put_Line ("             { values:[");
+                     for X in 1 .. Info.Int_Max loop
+                        Put_Line ("                   " & X'Img & ",");
+                     end loop;
+                     Put_Line ("],");
+                     Put_Line ("               property: """ & Info.Label &
+                                 """});");
+
+                     Put_Line ("  this.lg2ada_property_callback[""" & Info.Label &
+                                 """] = function (value, widget, node) {");
+                     Put_Line ("                     const current = that." & Arr & ".length;");
+                     Put_Line ("                     const diff = value - current;");
+                     Put_Line ("");
+                     Put_Line ("                     if (diff < 0) {");
+                     Put_Line ("                         for (i = 0; i < -diff; i++) {");
+                     Put_Line ("                             that.remove" & Fun & "(that." & Arr & ".length - 1);");
+                     Put_Line ("                         }");
+                     Put_Line ("                     } else if (diff > 0) {");
+                     Put_Line ("                         for (i = 0; i < diff; i++) {");
+                     Put_Line ("                             // We should always have at least one port");
+                     Put_Line ("                             that.add" & Fun & "(that." & Arr & "[0].name,");
+                     Put_Line ("                                            that." & Arr & "[0].type,");
+                     Put_Line ("                                            {shape: that." & Arr & "[0].shape});");
+                     Put_Line ("                         }");
+                     Put_Line ("                     }");
+                     Put_Line ("                 }");
+                  end;
             end case;
 
          when Str_Prop =>
@@ -215,6 +258,7 @@ package body Litegraph_To_Ada is
       end loop;
 
       Put_Line ("  this.properties = {};");
+      Put_Line ("  this.lg2ada_property_callback = {};");
       for X in Property_Id'Range loop
          declare
             Info : constant Property_Info := This.Get_Property_Info (X);
@@ -224,6 +268,13 @@ package body Litegraph_To_Ada is
          end;
       end loop;
 
+      Put_Line ("}");
+      Put_Line (LG_Node_Name & ".prototype.onPropertyChanged = function (name, value) {");
+      Put_Line ("    if (this.lg2ada_property_callback) {");
+      Put_Line ("        if (this.lg2ada_property_callback[name]) {");
+      Put_Line ("            this.lg2ada_property_callback[name](value);");
+      Put_Line ("        }");
+      Put_Line ("    }");
       Put_Line ("}");
       Put_Line (LG_Node_Name & ".title = """ & Name & """;");
 

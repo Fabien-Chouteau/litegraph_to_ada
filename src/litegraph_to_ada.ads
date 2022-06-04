@@ -32,12 +32,13 @@ package Litegraph_To_Ada is
    type Property_Id is new Natural;
    type Property_Kind is (Int_Prop, Str_Prop, Bool_Prop);
 
-   type Int_Widget_Kind is (None, Number, Slider, Combo);
+   type Int_Widget_Kind is (None, Number, Slider, Combo,
+                            Input_Clones, Output_Clones);
    type Str_Widget_Kind is (None, Text);
    type Bool_Widget_Kind is (None, Toggle);
 
    type Property_Info (Label_Len : Natural; Kind : Property_Kind) is record
-      Label   : String (1 .. Label_Len);
+      Label : String (1 .. Label_Len);
       case Kind is
          when Int_Prop =>
             Int_Widget : Int_Widget_Kind;
