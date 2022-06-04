@@ -190,7 +190,7 @@ package body Litegraph_To_Ada is
    begin
       Put_Line ("function " & LG_Node_Name & "()");
       Put_Line ("{");
-      Put_Line ("  that = this;");
+      Put_Line ("  var that = this;");
 
       for X in Port_Id'Range loop
          declare
