@@ -16,6 +16,7 @@ package Litegraph_To_Ada.Bounded_Manager is
    end Singleton_Node_Register;
 
    type Load_Result is (Ok,
+                        Invalid_Config_Line,
                         Cannot_Modify_Graph_After_Start,
                         Invalid_Category,
                         Invalid_Node_Type,
@@ -60,6 +61,7 @@ package Litegraph_To_Ada.Bounded_Manager is
    function Result_String (Result : Load_Result) return String
    is (case Result is
           when Ok => "ok",
+          when Invalid_Config_Line => "invalid config line",
           when Cannot_Modify_Graph_After_Start =>
              "cannot modify graph after start",
           when Invalid_Category  => "invalid node category",

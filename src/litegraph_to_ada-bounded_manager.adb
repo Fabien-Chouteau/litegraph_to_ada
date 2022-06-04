@@ -714,7 +714,7 @@ package body Litegraph_To_Ada.Bounded_Manager is
       elsif To_Str (Key_Slice) = "link" then
          Load_Link_Config;
       else
-         raise Program_Error;
+         Result := Invalid_Config_Line;
       end if;
    end Load_Config_Line;
 
